@@ -114,4 +114,4 @@ def listen() -> None:
 
 
 def run(ui : gradio.Blocks) -> None:
-	ui.launch(show_api = False, inbrowser = state_manager.get_item('open_browser'))
+	ui.queue(concurrency_count = concurrency_count).launch(show_api = True, quiet = True, server_name="0.0.0.0", server_port=7860, share=True, inbrowser = False)
