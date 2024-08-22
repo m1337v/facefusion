@@ -59,8 +59,6 @@ Spectrogram = NDArray[Any]
 Mel = NDArray[Any]
 MelFilterBank = NDArray[Any]
 
-MotionPoints = NDArray[Any]
-
 Fps = float
 Padding = Tuple[int, int, int, int]
 Resolution = Tuple[int, int]
@@ -151,7 +149,7 @@ ExecutionDevice = TypedDict('ExecutionDevice',
 	'utilization' : ExecutionDeviceUtilization
 })
 
-AppContext = Literal['core', 'uis']
+AppContext = Literal['cli', 'ui']
 
 InferencePool = Dict[str, InferenceSession]
 InferencePoolSet = Dict[AppContext, Dict[str, InferencePool]]
