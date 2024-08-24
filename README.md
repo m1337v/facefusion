@@ -1,24 +1,10 @@
-FaceFusion
+FF
 ==========
-
-> Next generation face swapper and enhancer.
-
-[![Build Status](https://img.shields.io/github/actions/workflow/status/facefusion/facefusion/ci.yml.svg?branch=master)](https://github.com/facefusion/facefusion/actions?query=workflow:ci)
-[![Coverage Status](https://coveralls.io/repos/github/facefusion/facefusion/badge.svg)](https://coveralls.io/github/facefusion/facefusion)
-![License](https://img.shields.io/badge/license-MIT-green)
-
-
-Preview
--------
-
-![Preview](https://raw.githubusercontent.com/facefusion/facefusion/master/.github/preview.png?sanitize=true)
-
 
 Installation
 ------------
 
-Be aware, the [installation](https://docs.facefusion.io/installation) needs technical skills and is not recommended for beginners. In case you are not comfortable using a terminal, our [Windows Installer](https://buymeacoffee.com/henryruhs/e/251939) can have you up and running in minutes.
-
+Be aware, the installation needs technical skills and is not recommended for beginners. Please don't open platform-specific issues.
 
 Usage
 -----
@@ -51,9 +37,3 @@ commands:
     job-retry                                     retry a failed job
     job-retry-all                                 retry all failed jobs
 ```
-
-
-Documentation
--------------
-
-Read the [documentation](https://docs.facefusion.io) for a deep dive.
