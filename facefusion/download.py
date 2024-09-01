@@ -53,13 +53,8 @@ def is_download_done(url : str, file_path : str) -> bool:
 	return False
 
 
-def conditional_download_hashes(download_directory_path: str, hashes: DownloadSet) -> bool:
-	hash_paths = [hashes.get(hash_key).get('path') for hash_key in hashes.keys()]
-
-	# Check if all hash files already exist
-	if all(os.path.exists(os.path.join(download_directory_path, path)) for path in hash_paths):
-		print("All hash files are already downloaded. Skipping download.")
-		return True
+def conditional_download_hashes(download_directory_path : str, hashes : DownloadSet) -> bool:
+	hash_paths = [ hashes.get(hash_key).get('path') for hash_key in hashes.keys() ]
 
 	process_manager.check()
 	if not state_manager.get_item('skip_download'):
@@ -68,20 +63,23 @@ def conditional_download_hashes(download_directory_path: str, hashes: DownloadSe
 			for index in hashes:
 				if hashes.get(index).get('path') in invalid_hash_paths:
 					invalid_hash_url = hashes.get(index).get('url')
-					conditional_download(download_directory_path, [invalid_hash_url])
+					conditional_download(download_directory_path, [ invalid_hash_url ])
 
 	valid_hash_paths, invalid_hash_paths = validate_hash_paths(hash_paths)
-	# Rest of the existing logic...
+	for valid_hash_path in valid_hash_paths:
+		valid_hash_file_name, _ = os.path.splitext(os.path.basename(valid_hash_path))
+		logger.debug(wording.get('validating_hash_succeed').format(hash_file_name = valid_hash_file_name), __name__.upper())
+	for invalid_hash_path in invalid_hash_paths:
+		invalid_hash_file_name, _ = os.path.splitext(os.path.basename(invalid_hash_path))
+		logger.error(wording.get('validating_hash_failed').format(hash_file_name = invalid_hash_file_name), __name__.upper())
+
+	if not invalid_hash_paths:
+		process_manager.end()
 	return not invalid_hash_paths
 
 
-def conditional_download_sources(download_directory_path: str, sources: DownloadSet) -> bool:
-	source_paths = [sources.get(source_key).get('path') for source_key in sources.keys()]
-
-	# Check if all source files already exist
-	if all(os.path.exists(os.path.join(download_directory_path, path)) for path in source_paths):
-		print("All source files are already downloaded. Skipping download.")
-		return True
+def conditional_download_sources(download_directory_path : str, sources : DownloadSet) -> bool:
+	source_paths = [ sources.get(source_key).get('path') for source_key in sources.keys() ]
 
 	process_manager.check()
 	if not state_manager.get_item('skip_download'):
@@ -90,12 +88,22 @@ def conditional_download_sources(download_directory_path: str, sources: Download
 			for index in sources:
 				if sources.get(index).get('path') in invalid_source_paths:
 					invalid_source_url = sources.get(index).get('url')
-					conditional_download(download_directory_path, [invalid_source_url])
+					conditional_download(download_directory_path, [ invalid_source_url ])
 
 	valid_source_paths, invalid_source_paths = validate_source_paths(source_paths)
-	# Rest of the existing logic...
-	return not invalid_source_paths
+	for valid_source_path in valid_source_paths:
+		valid_source_file_name, _ = os.path.splitext(os.path.basename(valid_source_path))
+		logger.debug(wording.get('validating_source_succeed').format(source_file_name = valid_source_file_name), __name__.upper())
+	for invalid_source_path in invalid_source_paths:
+		invalid_source_file_name, _ = os.path.splitext(os.path.basename(invalid_source_path))
+		logger.error(wording.get('validating_source_failed').format(source_file_name = invalid_source_file_name), __name__.upper())
 
+		if remove_file(invalid_source_path):
+			logger.error(wording.get('deleting_corrupt_source').format(source_file_name = invalid_source_file_name), __name__.upper())
+
+	if not invalid_source_paths:
+		process_manager.end()
+	return not invalid_source_paths
 
 
 def validate_hash_paths(hash_paths : List[str]) -> Tuple[List[str], List[str]]:
