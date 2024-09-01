@@ -1,11 +1,12 @@
 filetype>=1.2.0
 gradio>=4.42.0
 gradio_rangeslider>=0.0.6
-numpy>=2.1.0
+numpy<2.0.0,>=1.24.4  # Downgraded to be less than 2.0.0
 onnx>=1.16.2
 onnxruntime_gpu==1.20.0
 opencv-python>=4.10.0.84
 psutil>=6.0.0
 tqdm>=4.66.5
-scipy>=1.14.1
+scipy<1.14.0,>=1.7.0  # Downgraded to be less than 1.14.0
+pandas==2.1.4  # Downgraded to a specific compatible version
 ffmpeg
