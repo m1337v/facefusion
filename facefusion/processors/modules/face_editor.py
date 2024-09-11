@@ -21,7 +21,7 @@ from facefusion.processors import choices as processors_choices
 from facefusion.processors.typing import FaceEditorInputs, LivePortraitExpression, LivePortraitFeatureVolume, LivePortraitMotionPoints, LivePortraitPitch, LivePortraitRoll, LivePortraitScale, LivePortraitTranslation, LivePortraitYaw
 from facefusion.program_helper import find_argument_group
 from facefusion.thread_helper import conditional_thread_semaphore, thread_semaphore
-from facefusion.typing import Args, Face, FaceLandmark68, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
+from facefusion.typing import ApplyStateItem, Args, Face, FaceLandmark68, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
 from facefusion.vision import read_image, read_static_image, write_image
 
 MODEL_SET : ModelSet =\
@@ -92,15 +92,18 @@ MODEL_SET : ModelSet =\
 
 def get_inference_pool() -> InferencePool:
 	model_sources = get_model_options().get('sources')
-	return inference_manager.get_inference_pool(__name__, model_sources)
+	model_context = __name__ + '.' + state_manager.get_item('face_editor_model')
+	return inference_manager.get_inference_pool(model_context, model_sources)
 
 
 def clear_inference_pool() -> None:
-	inference_manager.clear_inference_pool(__name__)
+	model_context = __name__ + '.' + state_manager.get_item('face_editor_model')
+	inference_manager.clear_inference_pool(model_context)
 
 
 def get_model_options() -> ModelOptions:
-	return MODEL_SET[state_manager.get_item('face_editor_model')]
+	face_editor_model = state_manager.get_item('face_editor_model')
+	return MODEL_SET.get(face_editor_model)
 
 
 def register_args(program : ArgumentParser) -> None:
@@ -121,19 +124,19 @@ def register_args(program : ArgumentParser) -> None:
 		facefusion.jobs.job_store.register_step_keys([ 'face_editor_model', 'face_editor_eyebrow_direction', 'face_editor_eye_gaze_horizontal', 'face_editor_eye_gaze_vertical', 'face_editor_eye_open_ratio', 'face_editor_lip_open_ratio', 'face_editor_mouth_grim', 'face_editor_mouth_pout', 'face_editor_mouth_purse', 'face_editor_mouth_smile', 'face_editor_mouth_position_horizontal', 'face_editor_mouth_position_vertical' ])
 
 
-def apply_args(args : Args) -> None:
-	state_manager.init_item('face_editor_model', args.get('face_editor_model'))
-	state_manager.init_item('face_editor_eyebrow_direction', args.get('face_editor_eyebrow_direction'))
-	state_manager.init_item('face_editor_eye_gaze_horizontal', args.get('face_editor_eye_gaze_horizontal'))
-	state_manager.init_item('face_editor_eye_gaze_vertical', args.get('face_editor_eye_gaze_vertical'))
-	state_manager.init_item('face_editor_eye_open_ratio', args.get('face_editor_eye_open_ratio'))
-	state_manager.init_item('face_editor_lip_open_ratio', args.get('face_editor_lip_open_ratio'))
-	state_manager.init_item('face_editor_mouth_grim', args.get('face_editor_mouth_grim'))
-	state_manager.init_item('face_editor_mouth_pout', args.get('face_editor_mouth_pout'))
-	state_manager.init_item('face_editor_mouth_purse', args.get('face_editor_mouth_purse'))
-	state_manager.init_item('face_editor_mouth_smile', args.get('face_editor_mouth_smile'))
-	state_manager.init_item('face_editor_mouth_position_horizontal', args.get('face_editor_mouth_position_horizontal'))
-	state_manager.init_item('face_editor_mouth_position_vertical', args.get('face_editor_mouth_position_vertical'))
+def apply_args(args : Args, apply_state_item : ApplyStateItem) -> None:
+	apply_state_item('face_editor_model', args.get('face_editor_model'))
+	apply_state_item('face_editor_eyebrow_direction', args.get('face_editor_eyebrow_direction'))
+	apply_state_item('face_editor_eye_gaze_horizontal', args.get('face_editor_eye_gaze_horizontal'))
+	apply_state_item('face_editor_eye_gaze_vertical', args.get('face_editor_eye_gaze_vertical'))
+	apply_state_item('face_editor_eye_open_ratio', args.get('face_editor_eye_open_ratio'))
+	apply_state_item('face_editor_lip_open_ratio', args.get('face_editor_lip_open_ratio'))
+	apply_state_item('face_editor_mouth_grim', args.get('face_editor_mouth_grim'))
+	apply_state_item('face_editor_mouth_pout', args.get('face_editor_mouth_pout'))
+	apply_state_item('face_editor_mouth_purse', args.get('face_editor_mouth_purse'))
+	apply_state_item('face_editor_mouth_smile', args.get('face_editor_mouth_smile'))
+	apply_state_item('face_editor_mouth_position_horizontal', args.get('face_editor_mouth_position_horizontal'))
+	apply_state_item('face_editor_mouth_position_vertical', args.get('face_editor_mouth_position_vertical'))
 
 
 def pre_check() -> bool:
@@ -146,13 +149,13 @@ def pre_check() -> bool:
 
 def pre_process(mode : ProcessMode) -> bool:
 	if mode in [ 'output', 'preview' ] and not is_image(state_manager.get_item('target_path')) and not is_video(state_manager.get_item('target_path')):
-		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not in_directory(state_manager.get_item('output_path')):
-		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not same_file_extension([ state_manager.get_item('target_path'), state_manager.get_item('output_path') ]):
-		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__)
 		return False
 	return True
 

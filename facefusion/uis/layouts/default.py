@@ -114,4 +114,4 @@ def listen() -> None:
 
 
 def run(ui : gradio.Blocks) -> None:
-	ui.launch(share = True, show_api = False, inbrowser = state_manager.get_item('open_browser'))
+	ui.launch(favicon_path = 'facefusion.ico', share = True, show_api = False, inbrowser = state_manager.get_item('open_browser'))

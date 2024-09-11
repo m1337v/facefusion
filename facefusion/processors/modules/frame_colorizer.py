@@ -15,7 +15,7 @@ from facefusion.processors import choices as processors_choices
 from facefusion.processors.typing import FrameColorizerInputs
 from facefusion.program_helper import find_argument_group
 from facefusion.thread_helper import thread_semaphore
-from facefusion.typing import Args, Face, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
+from facefusion.typing import ApplyStateItem, Args, Face, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
 from facefusion.vision import read_image, read_static_image, unpack_resolution, write_image
 
 MODEL_SET : ModelSet =\
@@ -125,15 +125,18 @@ MODEL_SET : ModelSet =\
 
 def get_inference_pool() -> InferencePool:
 	model_sources = get_model_options().get('sources')
-	return inference_manager.get_inference_pool(__name__, model_sources)
+	model_context = __name__ + '.' + state_manager.get_item('frame_colorizer_model')
+	return inference_manager.get_inference_pool(model_context, model_sources)
 
 
 def clear_inference_pool() -> None:
-	inference_manager.clear_inference_pool(__name__)
+	model_context = __name__ + '.' + state_manager.get_item('frame_colorizer_model')
+	inference_manager.clear_inference_pool(model_context)
 
 
 def get_model_options() -> ModelOptions:
-	return MODEL_SET[state_manager.get_item('frame_colorizer_model')]
+	frame_colorizer_model = state_manager.get_item('frame_colorizer_model')
+	return MODEL_SET.get(frame_colorizer_model)
 
 
 def register_args(program : ArgumentParser) -> None:
@@ -145,10 +148,10 @@ def register_args(program : ArgumentParser) -> None:
 		facefusion.jobs.job_store.register_step_keys([ 'frame_colorizer_model', 'frame_colorizer_blend', 'frame_colorizer_size' ])
 
 
-def apply_args(args : Args) -> None:
-	state_manager.init_item('frame_colorizer_model', args.get('frame_colorizer_model'))
-	state_manager.init_item('frame_colorizer_blend', args.get('frame_colorizer_blend'))
-	state_manager.init_item('frame_colorizer_size', args.get('frame_colorizer_size'))
+def apply_args(args : Args, apply_state_item : ApplyStateItem) -> None:
+	apply_state_item('frame_colorizer_model', args.get('frame_colorizer_model'))
+	apply_state_item('frame_colorizer_blend', args.get('frame_colorizer_blend'))
+	apply_state_item('frame_colorizer_size', args.get('frame_colorizer_size'))
 
 
 def pre_check() -> bool:
@@ -161,13 +164,13 @@ def pre_check() -> bool:
 
 def pre_process(mode : ProcessMode) -> bool:
 	if mode in [ 'output', 'preview' ] and not is_image(state_manager.get_item('target_path')) and not is_video(state_manager.get_item('target_path')):
-		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not in_directory(state_manager.get_item('output_path')):
-		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not same_file_extension([ state_manager.get_item('target_path'), state_manager.get_item('output_path') ]):
-		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__)
 		return False
 	return True
 

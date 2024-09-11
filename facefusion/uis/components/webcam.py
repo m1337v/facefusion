@@ -79,7 +79,6 @@ def listen() -> None:
 
 def start(webcam_mode : WebcamMode, webcam_resolution : str, webcam_fps : Fps) -> Generator[VisionFrame, None, None]:
 	state_manager.set_item('face_selector_mode', 'one')
-	state_manager.set_item('face_selector_order', 'large-small')
 	source_image_paths = filter_image_paths(state_manager.get_item('source_paths'))
 	source_frames = read_static_images(source_image_paths)
 	source_faces = get_many_faces(source_frames)
@@ -164,5 +163,5 @@ def open_stream(stream_mode : StreamMode, stream_resolution : str, stream_fps : 
 			if device_name:
 				commands.extend([ '-f', 'v4l2', '/dev/' + device_name ])
 		except FileNotFoundError:
-			logger.error(wording.get('stream_not_loaded').format(stream_mode = stream_mode), __name__.upper())
+			logger.error(wording.get('stream_not_loaded').format(stream_mode = stream_mode), __name__)
 	return open_ffmpeg(commands)

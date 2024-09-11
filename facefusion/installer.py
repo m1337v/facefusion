@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -13,15 +14,15 @@ from facefusion.common_helper import is_linux, is_macos, is_windows
 ONNXRUNTIMES : Dict[str, Tuple[str, str]] = {}
 
 if is_macos():
-	ONNXRUNTIMES['default'] = ('onnxruntime', '1.19.0')
+	ONNXRUNTIMES['default'] = ('onnxruntime', '1.19.2')
 else:
-	ONNXRUNTIMES['default'] = ('onnxruntime', '1.19.0')
-	ONNXRUNTIMES['cuda'] = ('onnxruntime-gpu', '1.19.0')
+	ONNXRUNTIMES['default'] = ('onnxruntime', '1.19.2')
+	ONNXRUNTIMES['cuda'] = ('onnxruntime-gpu', '1.19.2')
 	ONNXRUNTIMES['openvino'] = ('onnxruntime-openvino', '1.18.0')
 if is_linux():
 	ONNXRUNTIMES['rocm'] = ('onnxruntime-rocm', '1.18.0')
 if is_windows():
-	ONNXRUNTIMES['directml'] = ('onnxruntime-directml', '1.19.0')
+	ONNXRUNTIMES['directml'] = ('onnxruntime-directml', '1.19.2')
 
 
 def cli() -> None:
@@ -55,7 +56,7 @@ def run(program : ArgumentParser) -> None:
 		onnxruntime = answers['onnxruntime']
 		onnxruntime_name, onnxruntime_version = ONNXRUNTIMES[onnxruntime]
 
-		subprocess.call([ 'pip', 'install', '-r', 'requirements.txt', '--force-reinstall' ])
+		subprocess.call([ shutil.which('pip'), 'install', '-r', 'requirements.txt', '--force-reinstall' ])
 
 		if onnxruntime == 'rocm':
 			python_id = 'cp' + str(sys.version_info.major) + str(sys.version_info.minor)
@@ -64,40 +65,43 @@ def run(program : ArgumentParser) -> None:
 				wheel_name = 'onnxruntime_rocm-' + onnxruntime_version +'-' + python_id + '-' + python_id + '-linux_x86_64.whl'
 				wheel_path = os.path.join(tempfile.gettempdir(), wheel_name)
 				wheel_url = 'https://repo.radeon.com/rocm/manylinux/rocm-rel-6.2/' + wheel_name
-				subprocess.call([ 'curl', '--silent', '--location', '--continue-at', '-', '--output', wheel_path, wheel_url ])
-				subprocess.call([ 'pip', 'uninstall', 'onnxruntime', wheel_path, '-y', '-q' ])
-				subprocess.call([ 'pip', 'install', wheel_path, '--force-reinstall' ])
+				subprocess.call([ shutil.which('curl'), '--silent', '--location', '--continue-at', '-', '--output', wheel_path, wheel_url ])
+				subprocess.call([ shutil.which('pip'), 'uninstall', 'onnxruntime', wheel_path, '-y', '-q' ])
+				subprocess.call([ shutil.which('pip'), 'install', wheel_path, '--force-reinstall' ])
 				os.remove(wheel_path)
 		else:
-			subprocess.call([ 'pip', 'uninstall', 'onnxruntime', onnxruntime_name, '-y', '-q' ])
-			subprocess.call([ 'pip', 'install', onnxruntime_name + '==' + onnxruntime_version, '--force-reinstall' ])
+			subprocess.call([ shutil.which('pip'), 'uninstall', 'onnxruntime', onnxruntime_name, '-y', '-q' ])
+			subprocess.call([ shutil.which('pip'), 'install', onnxruntime_name + '==' + onnxruntime_version, '--force-reinstall' ])
 
-		if onnxruntime == 'cuda':
-			subprocess.call([ 'pip', 'install', 'tensorrt==10.3.0', '--extra-index-url', 'https://pypi.nvidia.com', '--force-reinstall' ])
+		if onnxruntime == 'cuda' and has_conda:
+			library_paths = []
 
-			if has_conda:
-				library_paths = []
+			if is_linux():
+				if os.getenv('LD_LIBRARY_PATH'):
+					library_paths = os.getenv('LD_LIBRARY_PATH').split(os.pathsep)
 
-				if is_linux():
-					if os.getenv('LD_LIBRARY_PATH'):
-						library_paths = os.getenv('LD_LIBRARY_PATH').split(os.pathsep)
+				python_id = 'python' + str(sys.version_info.major) + '.' + str(sys.version_info.minor)
+				library_paths.extend(
+				[
+					os.path.join(os.getenv('CONDA_PREFIX'), 'lib'),
+					os.path.join(os.getenv('CONDA_PREFIX'), 'lib', python_id, 'site-packages', 'tensorrt_libs')
+				])
+				library_paths = [ library_path for library_path in library_paths if os.path.exists(library_path) ]
 
-					python_id = 'python' + str(sys.version_info.major) + '.' + str(sys.version_info.minor)
-					library_paths.extend(
-					[
-						os.path.join(os.getenv('CONDA_PREFIX'), 'lib'),
-						os.path.join(os.getenv('CONDA_PREFIX'), 'lib', python_id, 'site-packages', 'tensorrt_libs')
-					])
+				subprocess.call([ shutil.which('conda'), 'env', 'config', 'vars', 'set', 'LD_LIBRARY_PATH=' + os.pathsep.join(library_paths) ])
 
-					subprocess.call([ 'conda', 'env', 'config', 'vars', 'set', 'LD_LIBRARY_PATH=' + os.pathsep.join(library_paths) ])
-				if is_windows():
-					if os.getenv('PATH'):
-						library_paths = os.getenv('PATH').split(os.pathsep)
+			if is_windows():
+				if os.getenv('PATH'):
+					library_paths = os.getenv('PATH').split(os.pathsep)
 
-					library_paths.extend(
-					[
-						os.path.join(os.getenv('CONDA_PREFIX'), 'Lib'),
-						os.path.join(os.getenv('CONDA_PREFIX'), 'Lib', 'site-packages', 'tensorrt_libs')
-					])
+				library_paths.extend(
+				[
+					os.path.join(os.getenv('CONDA_PREFIX'), 'Lib'),
+					os.path.join(os.getenv('CONDA_PREFIX'), 'Lib', 'site-packages', 'tensorrt_libs')
+				])
+				library_paths = [ library_path for library_path in library_paths if os.path.exists(library_path) ]
 
-					subprocess.call([ 'conda', 'env', 'config', 'vars', 'set', 'PATH=' + os.pathsep.join(library_paths) ])
+				subprocess.call([ shutil.which('conda'), 'env', 'config', 'vars', 'set', 'PATH=' + os.pathsep.join(library_paths) ])
+
+		if onnxruntime_version == '1.18.0':
+			subprocess.call([ shutil.which('pip'), 'install', 'numpy==1.26.4', '--force-reinstall' ])

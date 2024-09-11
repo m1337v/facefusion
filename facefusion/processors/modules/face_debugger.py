@@ -17,7 +17,7 @@ from facefusion.filesystem import in_directory, same_file_extension
 from facefusion.processors import choices as processors_choices
 from facefusion.processors.typing import FaceDebuggerInputs
 from facefusion.program_helper import find_argument_group
-from facefusion.typing import Args, Face, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
+from facefusion.typing import ApplyStateItem, Args, Face, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
 from facefusion.vision import read_image, read_static_image, write_image
 
 
@@ -36,8 +36,8 @@ def register_args(program : ArgumentParser) -> None:
 		facefusion.jobs.job_store.register_step_keys([ 'face_debugger_items' ])
 
 
-def apply_args(args : Args) -> None:
-	state_manager.init_item('face_debugger_items', args.get('face_debugger_items'))
+def apply_args(args : Args, apply_state_item : ApplyStateItem) -> None:
+	apply_state_item('face_debugger_items', args.get('face_debugger_items'))
 
 
 def pre_check() -> bool:
@@ -46,10 +46,10 @@ def pre_check() -> bool:
 
 def pre_process(mode : ProcessMode) -> bool:
 	if mode == 'output' and not in_directory(state_manager.get_item('output_path')):
-		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not same_file_extension([ state_manager.get_item('target_path'), state_manager.get_item('output_path') ]):
-		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__)
 		return False
 	return True
 
@@ -143,18 +143,22 @@ def debug_face(target_face : Face, temp_vision_frame : VisionFrame) -> VisionFra
 			face_score_text = str(round(target_face.score_set.get('detector'), 2))
 			top = top + 20
 			cv2.putText(temp_vision_frame, face_score_text, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, primary_color, 2)
+
 		if 'face-landmarker-score' in face_debugger_items:
 			face_score_text = str(round(target_face.score_set.get('landmarker'), 2))
 			top = top + 20
 			cv2.putText(temp_vision_frame, face_score_text, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, tertiary_color if has_face_landmark_5_fallback else secondary_color, 2)
+
 		if 'age' in face_debugger_items:
 			face_age_text = str(target_face.age.start) + '-' + str(target_face.age.stop)
 			top = top + 20
 			cv2.putText(temp_vision_frame, face_age_text, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, primary_color, 2)
+
 		if 'gender' in face_debugger_items:
 			face_gender_text = target_face.gender
 			top = top + 20
 			cv2.putText(temp_vision_frame, face_gender_text, (left, top), cv2.FONT_HERSHEY_SIMPLEX, 0.5, primary_color, 2)
+
 		if 'race' in face_debugger_items:
 			face_race_text = target_face.race
 			top = top + 20

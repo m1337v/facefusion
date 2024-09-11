@@ -1,12 +1,13 @@
-from logging import DEBUG, ERROR, INFO, Logger, WARNING, basicConfig, getLogger
-from typing import Dict, Tuple
+from logging import Logger, basicConfig, getLogger
+from typing import Tuple
 
+from facefusion.choices import log_level_set
 from facefusion.typing import LogLevel, TableContents, TableHeaders
 
 
 def init(log_level : LogLevel) -> None:
-	basicConfig(format = None)
-	get_package_logger().setLevel(get_log_levels()[log_level])
+	basicConfig(format = '%(message)s')
+	get_package_logger().setLevel(log_level_set.get(log_level))
 
 
 def get_package_logger() -> Logger:
@@ -14,19 +15,19 @@ def get_package_logger() -> Logger:
 
 
 def debug(message : str, scope : str) -> None:
-	get_package_logger().debug('[' + scope + '] ' + message)
+	get_package_logger().debug('[' + scope.upper() + '] ' + message)
 
 
 def info(message : str, scope : str) -> None:
-	get_package_logger().info('[' + scope + '] ' + message)
+	get_package_logger().info('[' + scope.upper() + '] ' + message)
 
 
 def warn(message : str, scope : str) -> None:
-	get_package_logger().warning('[' + scope + '] ' + message)
+	get_package_logger().warning('[' + scope.upper() + '] ' + message)
 
 
 def error(message : str, scope : str) -> None:
-	get_package_logger().error('[' + scope + '] ' + message)
+	get_package_logger().error('[' + scope.upper() + '] ' + message)
 
 
 def table(headers : TableHeaders, contents : TableContents) -> None:
@@ -36,16 +37,18 @@ def table(headers : TableHeaders, contents : TableContents) -> None:
 	package_logger.info(table_separator)
 	package_logger.info(table_column.format(*headers))
 	package_logger.info(table_separator)
+
 	for content in contents:
 		package_logger.info(table_column.format(*content))
+
 	package_logger.info(table_separator)
 
 
 def create_table_parts(headers : TableHeaders, contents : TableContents) -> Tuple[str, str]:
 	column_parts = []
 	separator_parts = []
-
 	widths = [ len(header) for header in headers ]
+
 	for content in contents:
 		for index, value in enumerate(content):
 			widths[index] = max(widths[index], len(str(value)))
@@ -63,13 +66,3 @@ def enable() -> None:
 
 def disable() -> None:
 	get_package_logger().disabled = True
-
-
-def get_log_levels() -> Dict[LogLevel, int]:
-	return\
-	{
-		'error': ERROR,
-		'warn': WARNING,
-		'info': INFO,
-		'debug': DEBUG
-	}

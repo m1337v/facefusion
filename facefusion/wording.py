@@ -4,6 +4,7 @@ WORDING : Dict[str, Any] =\
 {
 	'conda_not_activated': 'Conda is not activated',
 	'python_not_supported': 'Python version is not supported, upgrade to {version} or higher',
+	'curl_not_installed': 'CURL is not installed',
 	'ffmpeg_not_installed': 'FFMpeg is not installed',
 	'creating_temp': 'Creating temporary resources',
 	'extracting_frames': 'Extracting frames with a resolution of {resolution} and {fps} frames per second',
@@ -180,7 +181,7 @@ WORDING : Dict[str, Any] =\
 		'run': 'run the program',
 		'headless_run': 'run the program in headless mode',
 		'force_download': 'force automate downloads and exit',
-		# job
+		# jobs
 		'job_id': 'specify the job id',
 		'step_index': 'specify the step index',
 		# job manager
@@ -262,6 +263,7 @@ WORDING : Dict[str, Any] =\
 		'job_runner_job_action_dropdown': 'JOB ACTION',
 		'job_runner_job_id_dropdown': 'JOB ID',
 		'lip_syncer_model_dropdown': 'LIP SYNCER MODEL',
+		'log_level_dropdown': 'LOG LEVEL',
 		'output_audio_encoder_dropdown': 'OUTPUT AUDIO ENCODER',
 		'output_image_or_video': 'OUTPUT',
 		'output_image_quality_slider': 'OUTPUT IMAGE QUALITY',

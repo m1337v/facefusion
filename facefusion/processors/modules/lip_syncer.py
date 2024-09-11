@@ -21,7 +21,7 @@ from facefusion.processors import choices as processors_choices
 from facefusion.processors.typing import LipSyncerInputs
 from facefusion.program_helper import find_argument_group
 from facefusion.thread_helper import conditional_thread_semaphore
-from facefusion.typing import Args, AudioFrame, Face, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
+from facefusion.typing import ApplyStateItem, Args, AudioFrame, Face, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
 from facefusion.vision import read_image, read_static_image, restrict_video_fps, write_image
 
 MODEL_SET : ModelSet =\
@@ -71,15 +71,18 @@ MODEL_SET : ModelSet =\
 
 def get_inference_pool() -> InferencePool:
 	model_sources = get_model_options().get('sources')
-	return inference_manager.get_inference_pool(__name__, model_sources)
+	model_context = __name__ + '.' + state_manager.get_item('lip_syncer_model')
+	return inference_manager.get_inference_pool(model_context, model_sources)
 
 
 def clear_inference_pool() -> None:
-	inference_manager.clear_inference_pool(__name__)
+	model_context = __name__ + '.' + state_manager.get_item('lip_syncer_model')
+	inference_manager.clear_inference_pool(model_context)
 
 
 def get_model_options() -> ModelOptions:
-	return MODEL_SET[state_manager.get_item('lip_syncer_model')]
+	lip_syncer_model = state_manager.get_item('lip_syncer_model')
+	return MODEL_SET.get(lip_syncer_model)
 
 
 def register_args(program : ArgumentParser) -> None:
@@ -89,8 +92,8 @@ def register_args(program : ArgumentParser) -> None:
 		facefusion.jobs.job_store.register_step_keys([ 'lip_syncer_model' ])
 
 
-def apply_args(args : Args) -> None:
-	state_manager.init_item('lip_syncer_model', args.get('lip_syncer_model'))
+def apply_args(args : Args, apply_state_item : ApplyStateItem) -> None:
+	apply_state_item('lip_syncer_model', args.get('lip_syncer_model'))
 
 
 def pre_check() -> bool:
@@ -103,16 +106,16 @@ def pre_check() -> bool:
 
 def pre_process(mode : ProcessMode) -> bool:
 	if not has_audio(state_manager.get_item('source_paths')):
-		logger.error(wording.get('choose_audio_source') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('choose_audio_source') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode in [ 'output', 'preview' ] and not is_image(state_manager.get_item('target_path')) and not is_video(state_manager.get_item('target_path')):
-		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not in_directory(state_manager.get_item('output_path')):
-		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not same_file_extension([ state_manager.get_item('target_path'), state_manager.get_item('output_path') ]):
-		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__)
 		return False
 	return True
 

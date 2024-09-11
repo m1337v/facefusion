@@ -1,12 +1,12 @@
 from argparse import ArgumentParser, HelpFormatter
 
 import facefusion.choices
-from facefusion import config, logger, metadata, state_manager, wording
+from facefusion import config, metadata, state_manager, wording
 from facefusion.common_helper import create_float_metavar, create_int_metavar
 from facefusion.execution import get_execution_provider_choices
 from facefusion.filesystem import list_directory
 from facefusion.jobs import job_store
-from facefusion.processors.core import load_processor_module
+from facefusion.processors.core import get_processors_modules
 from facefusion.program_helper import suggest_face_detector_choices
 
 
@@ -66,7 +66,7 @@ def create_face_selector_program() -> ArgumentParser:
 	program = ArgumentParser(add_help = False)
 	group_face_selector = program.add_argument_group('face selector')
 	group_face_selector.add_argument('--face-selector-mode', help = wording.get('help.face_selector_mode'), default = config.get_str_value('face_selector.face_selector_mode', 'reference'), choices = facefusion.choices.face_selector_modes)
-	group_face_selector.add_argument('--face-selector-order', help = wording.get('help.face_selector_order'), default = config.get_str_value('face_selector.face_selector_order', 'left-right'), choices = facefusion.choices.face_selector_orders)
+	group_face_selector.add_argument('--face-selector-order', help = wording.get('help.face_selector_order'), default = config.get_str_value('face_selector.face_selector_order', 'large-small'), choices = facefusion.choices.face_selector_orders)
 	group_face_selector.add_argument('--face-selector-gender', help = wording.get('help.face_selector_gender'), default = config.get_str_value('face_selector.face_selector_gender'), choices = facefusion.choices.face_selector_genders)
 	group_face_selector.add_argument('--face-selector-race', help = wording.get('help.face_selector_race'), default = config.get_str_value('face_selector.face_selector_race'), choices = facefusion.choices.face_selector_races)
 	group_face_selector.add_argument('--face-selector-age-start', help = wording.get('help.face_selector_age_start'), type = int, default = config.get_int_value('face_selector.face_selector_age_start'), choices = facefusion.choices.face_selector_age_range, metavar = create_int_metavar(facefusion.choices.face_selector_age_range))
@@ -122,8 +122,7 @@ def create_processors_program() -> ArgumentParser:
 	group_processors = program.add_argument_group('processors')
 	group_processors.add_argument('--processors', help = wording.get('help.processors').format(choices = ', '.join(available_processors)), default = config.get_str_list('processors.processors', 'face_swapper'), nargs = '+')
 	job_store.register_step_keys([ 'processors' ])
-	for processor in available_processors:
-		processor_module = load_processor_module(processor)
+	for processor_module in get_processors_modules(available_processors):
 		processor_module.register_args(program)
 	return program
 
@@ -170,7 +169,7 @@ def create_skip_download_program() -> ArgumentParser:
 def create_log_level_program() -> ArgumentParser:
 	program = ArgumentParser(add_help = False)
 	group_misc = program.add_argument_group('misc')
-	group_misc.add_argument('--log-level', help = wording.get('help.log_level'), default = config.get_str_value('misc.log_level', 'info'), choices = logger.get_log_levels())
+	group_misc.add_argument('--log-level', help = wording.get('help.log_level'), default = config.get_str_value('misc.log_level', 'info'), choices = facefusion.choices.log_level_set.keys())
 	job_store.register_job_keys([ 'log_level' ])
 	return program
 

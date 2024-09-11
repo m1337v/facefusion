@@ -22,7 +22,7 @@ from facefusion.processors.pixel_boost import explode_pixel_boost, implode_pixel
 from facefusion.processors.typing import FaceSwapperInputs
 from facefusion.program_helper import find_argument_group, suggest_face_swapper_pixel_boost_choices
 from facefusion.thread_helper import conditional_thread_semaphore
-from facefusion.typing import Args, Embedding, Face, FaceLandmark5, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
+from facefusion.typing import ApplyStateItem, Args, Embedding, Face, InferencePool, ModelOptions, ModelSet, ProcessMode, QueuePayload, UpdateProgress, VisionFrame
 from facefusion.vision import read_image, read_static_image, read_static_images, unpack_resolution, write_image
 
 MODEL_SET : ModelSet =\
@@ -35,11 +35,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/blendswap_256.hash',
 				'path': resolve_relative_path('../.assets/models/blendswap_256.hash')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.hash')
 			}
 		},
 		'sources':
@@ -48,11 +43,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/blendswap_256.onnx',
 				'path': resolve_relative_path('../.assets/models/blendswap_256.onnx')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.onnx')
 			}
 		},
 		'type': 'blendswap',
@@ -70,10 +60,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/ghost_256_unet_1.hash',
 				'path': resolve_relative_path('../.assets/models/ghost_256_unet_1.hash')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_ghost.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_ghost.hash')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_ghost.hash',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_ghost.hash')
 			}
 		},
 		'sources':
@@ -83,10 +73,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/ghost_256_unet_1.onnx',
 				'path': resolve_relative_path('../.assets/models/ghost_256_unet_1.onnx')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_ghost.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_ghost.onnx')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_ghost.onnx',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_ghost.onnx')
 			}
 		},
 		'type': 'ghost',
@@ -104,10 +94,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/ghost_256_unet_2.hash',
 				'path': resolve_relative_path('../.assets/models/ghost_256_unet_2.hash')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_ghost.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_ghost.hash')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_ghost.hash',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_ghost.hash')
 			}
 		},
 		'sources':
@@ -117,10 +107,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/ghost_256_unet_2.onnx',
 				'path': resolve_relative_path('../.assets/models/ghost_256_unet_2.onnx')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_ghost.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_ghost.onnx')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_ghost.onnx',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_ghost.onnx')
 			}
 		},
 		'type': 'ghost',
@@ -138,10 +128,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/ghost_256_unet_3.hash',
 				'path': resolve_relative_path('../.assets/models/ghost_256_unet_3.hash')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_ghost.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_ghost.hash')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_ghost.hash',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_ghost.hash')
 			}
 		},
 		'sources':
@@ -151,10 +141,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/ghost_256_unet_3.onnx',
 				'path': resolve_relative_path('../.assets/models/ghost_256_unet_3.onnx')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_ghost.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_ghost.onnx')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_ghost.onnx',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_ghost.onnx')
 			}
 		},
 		'type': 'ghost',
@@ -171,11 +161,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/inswapper_128.hash',
 				'path': resolve_relative_path('../.assets/models/inswapper_128.hash')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0//arcface_w600k_r50.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.hash')
 			}
 		},
 		'sources':
@@ -184,11 +169,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/inswapper_128.onnx',
 				'path': resolve_relative_path('../.assets/models/inswapper_128.onnx')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.onnx')
 			}
 		},
 		'type': 'inswapper',
@@ -205,11 +185,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/inswapper_128_fp16.hash',
 				'path': resolve_relative_path('../.assets/models/inswapper_128_fp16.hash')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.hash')
 			}
 		},
 		'sources':
@@ -218,11 +193,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/inswapper_128_fp16.onnx',
 				'path': resolve_relative_path('../.assets/models/inswapper_128_fp16.onnx')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.onnx')
 			}
 		},
 		'type': 'inswapper',
@@ -240,10 +210,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/simswap_256.hash',
 				'path': resolve_relative_path('../.assets/models/simswap_256.hash')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_simswap.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_simswap.hash')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_simswap.hash',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_simswap.hash')
 			}
 		},
 		'sources':
@@ -253,10 +223,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/simswap_256.onnx',
 				'path': resolve_relative_path('../.assets/models/simswap_256.onnx')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_simswap.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_simswap.onnx')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_simswap.onnx',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_simswap.onnx')
 			}
 		},
 		'type': 'simswap',
@@ -274,10 +244,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/simswap_512_unofficial.hash',
 				'path': resolve_relative_path('../.assets/models/simswap_512_unofficial.hash')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_simswap.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_simswap.hash')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_simswap.hash',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_simswap.hash')
 			}
 		},
 		'sources':
@@ -287,10 +257,10 @@ MODEL_SET : ModelSet =\
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/simswap_512_unofficial.onnx',
 				'path': resolve_relative_path('../.assets/models/simswap_512_unofficial.onnx')
 			},
-			'face_recognizer':
+			'embedding_converter':
 			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_simswap.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_simswap.onnx')
+				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_converter_w600k_r50_simswap.onnx',
+				'path': resolve_relative_path('../.assets/models/arcface_converter_w600k_r50_simswap.onnx')
 			}
 		},
 		'type': 'simswap',
@@ -307,11 +277,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/uniface_256.hash',
 				'path': resolve_relative_path('../.assets/models/uniface_256.hash')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.hash',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.hash')
 			}
 		},
 		'sources':
@@ -320,11 +285,6 @@ MODEL_SET : ModelSet =\
 			{
 				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/uniface_256.onnx',
 				'path': resolve_relative_path('../.assets/models/uniface_256.onnx')
-			},
-			'face_recognizer':
-			{
-				'url': 'https://github.com/facefusion/facefusion-assets/releases/download/models-3.0.0/arcface_w600k_r50.onnx',
-				'path': resolve_relative_path('../.assets/models/arcface_w600k_r50.onnx')
 			}
 		},
 		'type': 'uniface',
@@ -338,16 +298,19 @@ MODEL_SET : ModelSet =\
 
 def get_inference_pool() -> InferencePool:
 	model_sources = get_model_options().get('sources')
-	return inference_manager.get_inference_pool(__name__, model_sources)
+	model_context = __name__ + '.' + state_manager.get_item('face_swapper_model')
+	return inference_manager.get_inference_pool(model_context, model_sources)
 
 
 def clear_inference_pool() -> None:
-	inference_manager.clear_inference_pool(__name__)
+	model_context = __name__ + '.' + state_manager.get_item('face_swapper_model')
+	inference_manager.clear_inference_pool(model_context)
 
 
 def get_model_options() -> ModelOptions:
-	face_swapper_model = 'inswapper_128' if has_execution_provider('coreml') and state_manager.get_item('face_swapper_model') == 'inswapper_128_fp16' else state_manager.get_item('face_swapper_model')
-	return MODEL_SET[face_swapper_model]
+	face_swapper_model = state_manager.get_item('face_swapper_model')
+	face_swapper_model = 'inswapper_128' if has_execution_provider('coreml') and face_swapper_model == 'inswapper_128_fp16' else face_swapper_model
+	return MODEL_SET.get(face_swapper_model)
 
 
 def register_args(program : ArgumentParser) -> None:
@@ -359,9 +322,9 @@ def register_args(program : ArgumentParser) -> None:
 		facefusion.jobs.job_store.register_step_keys([ 'face_swapper_model', 'face_swapper_pixel_boost' ])
 
 
-def apply_args(args : Args) -> None:
-	state_manager.init_item('face_swapper_model', args.get('face_swapper_model'))
-	state_manager.init_item('face_swapper_pixel_boost', args.get('face_swapper_pixel_boost'))
+def apply_args(args : Args, apply_state_item : ApplyStateItem) -> None:
+	apply_state_item('face_swapper_model', args.get('face_swapper_model'))
+	apply_state_item('face_swapper_pixel_boost', args.get('face_swapper_pixel_boost'))
 
 
 def pre_check() -> bool:
@@ -374,22 +337,22 @@ def pre_check() -> bool:
 
 def pre_process(mode : ProcessMode) -> bool:
 	if not has_image(state_manager.get_item('source_paths')):
-		logger.error(wording.get('choose_image_source') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('choose_image_source') + wording.get('exclamation_mark'), __name__)
 		return False
 	source_image_paths = filter_image_paths(state_manager.get_item('source_paths'))
 	source_frames = read_static_images(source_image_paths)
 	source_faces = get_many_faces(source_frames)
 	if not get_one_face(source_faces):
-		logger.error(wording.get('no_source_face_detected') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('no_source_face_detected') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode in [ 'output', 'preview' ] and not is_image(state_manager.get_item('target_path')) and not is_video(state_manager.get_item('target_path')):
-		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('choose_image_or_video_target') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not in_directory(state_manager.get_item('output_path')):
-		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('specify_image_or_video_output') + wording.get('exclamation_mark'), __name__)
 		return False
 	if mode == 'output' and not same_file_extension([ state_manager.get_item('target_path'), state_manager.get_item('output_path') ]):
-		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__.upper())
+		logger.error(wording.get('match_target_and_output_extension') + wording.get('exclamation_mark'), __name__)
 		return False
 	return True
 
@@ -462,13 +425,13 @@ def forward_swap_face(source_face : Face, crop_vision_frame : VisionFrame) -> Vi
 	return crop_vision_frame
 
 
-def forward_calc_embedding(crop_vision_frame : VisionFrame) -> Embedding:
-	face_recognizer = get_inference_pool().get('face_recognizer')
+def forward_convert_embedding(embedding : Embedding) -> Embedding:
+	embedding_converter = get_inference_pool().get('embedding_converter')
 
 	with conditional_thread_semaphore():
-		embedding = face_recognizer.run(None,
+		embedding = embedding_converter.run(None,
 		{
-			'input': crop_vision_frame
+			'input': embedding
 		})[0]
 
 	return embedding
@@ -490,27 +453,24 @@ def prepare_source_frame(source_face : Face) -> VisionFrame:
 
 def prepare_source_embedding(source_face : Face) -> Embedding:
 	model_type = get_model_options().get('type')
-	source_vision_frame = read_static_image(get_first(state_manager.get_item('source_paths')))
-	source_embedding, source_normed_embedding = calc_embedding(source_vision_frame, source_face.landmark_set.get('5/68'))
 
 	if model_type == 'ghost':
+		source_embedding, _ = convert_embedding(source_face)
 		source_embedding = source_embedding.reshape(1, -1)
 	elif model_type == 'inswapper':
 		model_path = get_model_options().get('sources').get('face_swapper').get('path')
 		model_initializer = get_static_model_initializer(model_path)
-		source_embedding = source_embedding.reshape((1, -1))
+		source_embedding = source_face.embedding.reshape((1, -1))
 		source_embedding = numpy.dot(source_embedding, model_initializer) / numpy.linalg.norm(source_embedding)
 	else:
+		_, source_normed_embedding = convert_embedding(source_face)
 		source_embedding = source_normed_embedding.reshape(1, -1)
 	return source_embedding
 
 
-def calc_embedding(temp_vision_frame : VisionFrame, face_landmark_5 : FaceLandmark5) -> Tuple[Embedding, Embedding]:
-	crop_vision_frame, matrix = warp_face_by_face_landmark_5(temp_vision_frame, face_landmark_5, 'arcface_112_v2', (112, 112))
-	crop_vision_frame = crop_vision_frame / 127.5 - 1
-	crop_vision_frame = crop_vision_frame[:, :, ::-1].transpose(2, 0, 1).astype(numpy.float32)
-	crop_vision_frame = numpy.expand_dims(crop_vision_frame, axis = 0)
-	embedding = forward_calc_embedding(crop_vision_frame)
+def convert_embedding(source_face : Face) -> Tuple[Embedding, Embedding]:
+	embedding = source_face.embedding.reshape(-1, 512)
+	embedding = forward_convert_embedding(embedding)
 	embedding = embedding.ravel()
 	normed_embedding = embedding / numpy.linalg.norm(embedding)
 	return embedding, normed_embedding
